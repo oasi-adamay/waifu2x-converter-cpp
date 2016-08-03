@@ -20,6 +20,8 @@
 #include "modelHandler.hpp"
 #include "convertRoutine.hpp"
 
+#define _USE_MODEL_BIN		//use bin models
+
 int main(int argc, char** argv) {
 
 	// definition of command line arguments
@@ -78,14 +80,26 @@ int main(int argc, char** argv) {
 	// set number of jobs for processing models
 	w2xc::modelUtility::getInstance().setNumberOfJobs(cmdNumberOfJobs.getValue());
 
+	std::string strModelExt;
+#if !defined(_USE_MODEL_BIN)
+	strModelExt = ".json";
+#else
+	strModelExt = ".bin";
+#endif
+
 	// ===== Noise Reduction Phase =====
 	if (cmdMode.getValue() == "noise" || cmdMode.getValue() == "noise_scale") {
 		std::string modelFileName(cmdModelPath.getValue());
 		modelFileName = modelFileName + "/noise"
-				+ std::to_string(cmdNRLevel.getValue()) + "_model.json";
+			+ std::to_string(cmdNRLevel.getValue()) + "_model" + strModelExt;
 		std::vector<std::unique_ptr<w2xc::Model> > models;
 
+		std::cout << "Load model file:" << modelFileName << std::endl;
+#if !defined(_USE_MODEL_BIN)
 		if (!w2xc::modelUtility::generateModelFromJSON(modelFileName, models))
+#else
+		if (!w2xc::modelUtility::generateModelFromBin(modelFileName, models))
+#endif
 			std::exit(-1);
 
 		std::vector<cv::Mat> imageSplit;
@@ -114,10 +128,15 @@ int main(int argc, char** argv) {
 		}
 
 		std::string modelFileName(cmdModelPath.getValue());
-		modelFileName = modelFileName + "/scale2.0x_model.json";
+		modelFileName = modelFileName + "/scale2.0x_model" + strModelExt;
 		std::vector<std::unique_ptr<w2xc::Model> > models;
 
+		std::cout << "Load model file:" << modelFileName << std::endl;
+#if !defined(_USE_MODEL_BIN)
 		if (!w2xc::modelUtility::generateModelFromJSON(modelFileName, models))
+#else
+		if (!w2xc::modelUtility::generateModelFromBin(modelFileName, models))
+#endif
 			std::exit(-1);
 
 		std::cout << "start scaling" << std::endl;

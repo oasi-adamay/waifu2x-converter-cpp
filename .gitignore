@@ -14,6 +14,7 @@ appendix/waifu2x-nocuda/lib/*~
 *.user
 *.userosscache
 *.sln.docstates
+*.bak
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

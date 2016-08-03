@@ -94,7 +94,7 @@ bool Model::loadModelFromJSONObject(picojson::object &jsonObj) {
 
 				for (int index = 0; index < kernelSize; index++) {
 					writeMatrix.at<float>(writingRow, index) =
-							weightMatRow[index].get<double>();
+							(float)weightMatRow[index].get<double>();
 				} // for(weightMatRow) (writing 1 row finished)
 
 			} // for(weightMat) (writing 1 matrix finished)
@@ -113,6 +113,54 @@ bool Model::loadModelFromJSONObject(picojson::object &jsonObj) {
 
 	return true;
 }
+
+Model::Model(std::istream& binFile) {
+	// preload nInputPlanes,nOutputPlanes, and preserve required size vector
+
+	binFile.read((char*)&nInputPlanes, sizeof(int));
+	binFile.read((char*)&nOutputPlanes, sizeof(int));
+	binFile.read((char*)&kernelSize, sizeof(int));
+
+	weights = std::vector<cv::Mat>(nInputPlanes * nOutputPlanes, cv::Mat(kernelSize, kernelSize, CV_32FC1));
+	biases = std::vector<double>(nOutputPlanes, 0.0);
+
+	if (!loadModelFromBin(binFile)) {
+		std::cerr << "Error : Model-Constructor : \n"
+			"something error has been occured in loading model from Binary File.\n"
+			"stop."
+			<< std::endl;
+		std::exit(-1);
+	}
+
+}
+
+bool Model::loadModelFromBin(std::istream& binFile)
+{
+	// nInputPlanes,nOutputPlanes,kernelSize have already set.
+	int matProgress = 0;
+	for (int i = 0; i < nOutputPlanes; i++) {
+		for (int j = 0; j < nInputPlanes; j++) {
+			cv::Mat writeMatrix = cv::Mat::zeros(kernelSize, kernelSize, CV_32FC1);
+
+			for (int writingRow = 0; writingRow < kernelSize; writingRow++) {
+				for (int index = 0; index < kernelSize; index++) {
+					float data;
+					binFile.read((char*)&data, sizeof(float));
+					writeMatrix.at<float>(writingRow, index) = data;
+				}
+			}
+			weights.at(matProgress) = std::move(writeMatrix);
+			matProgress++;
+		}
+	}
+
+	// setting biases
+	biases.resize(nOutputPlanes);
+	binFile.read((char*)&biases[0], biases.size() * sizeof(double));
+
+	return true;
+}
+
 
 bool Model::filterWorker(std::vector<cv::Mat> &inputPlanes,
 		std::vector<cv::Mat> &weightMatrices,
@@ -193,6 +241,27 @@ bool modelUtility::generateModelFromJSON(const std::string &fileName,
 	return true;
 }
 
+bool modelUtility::generateModelFromBin(const std::string &fileName,
+	std::vector<std::unique_ptr<Model> > &models) {
+
+	std::ifstream binFile;
+
+	binFile.open(fileName, std::ios::binary);
+	if (!binFile.is_open()) {
+		std::cerr << "Error : couldn't open " << fileName << std::endl;
+		return false;
+	}
+
+	int32_t modelCount;
+	binFile.read((char*)&modelCount, sizeof(modelCount));
+	for (int i = 0; i < modelCount; i++) {
+		models.emplace_back(new Model(binFile));
+	}
+
+	return true;
+}
+
+
 bool modelUtility::setNumberOfJobs(int setNJob){
 	if(setNJob < 1)return false;
 	nJob = setNJob;
@@ -211,7 +280,7 @@ bool modelUtility::setBlockSize(cv::Size size){
 
 bool modelUtility::setBlockSizeExp2Square(int exp){
 	if(exp < 0)return false;
-	int length = std::pow(2, exp);
+	int length = (int)std::pow(2, exp);
 	blockSplittingSize = cv::Size(length, length);
 	return true;
 }
