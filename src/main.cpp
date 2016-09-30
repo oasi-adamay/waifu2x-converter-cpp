@@ -22,7 +22,16 @@
 
 #define _USE_MODEL_BIN		//use bin models
 
+#if 1
+#include "Timer.h"
+#define _TMR_(...)  Timer tmr(__VA_ARGS__)
+#else
+#define _TMR_(...)
+#endif
+
+
 int main(int argc, char** argv) {
+	_TMR_("Total Time\t");
 
 	// definition of command line arguments
 	TCLAP::CmdLine cmd("waifu2x reimplementation using OpenCV", ' ', "1.0.0");
@@ -89,6 +98,8 @@ int main(int argc, char** argv) {
 
 	// ===== Noise Reduction Phase =====
 	if (cmdMode.getValue() == "noise" || cmdMode.getValue() == "noise_scale") {
+		_TMR_("Noise Reduction\t:");
+
 		std::string modelFileName(cmdModelPath.getValue());
 		modelFileName = modelFileName + "/noise"
 			+ std::to_string(cmdNRLevel.getValue()) + "_model" + strModelExt;
@@ -116,6 +127,7 @@ int main(int argc, char** argv) {
 	// ===== scaling phase =====
 
 	if (cmdMode.getValue() == "scale" || cmdMode.getValue() == "noise_scale") {
+		_TMR_("scaling Phase\t\t:");
 
 		// calculate iteration times of 2x scaling and shrink ratio which will use at last
 		int iterTimesTwiceScaling = static_cast<int>(std::ceil(
