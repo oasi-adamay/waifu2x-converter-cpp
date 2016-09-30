@@ -238,3 +238,5 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 
+/build/waifu2x.VC.VC.opendb
+/build/waifu2x.VC.db
