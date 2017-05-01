@@ -5,60 +5,60 @@ This is also a reimplementation of [waifu2x python version](https://marcan.st/tr
 You can use this as command-line tool of image noise reduction or/and scaling.
 
 
-## Prebuilt binary-form release
-
-Please see [releases](https://github.com/WL-Amigo/waifu2x-converter-cpp/releases) of this repository.
-There is only for-windows binary, now. Sorry.
-
-### works using waifu2x-converter
-
- * [waifu2x_win_koroshell](http://inatsuka.com/extra/koroshell/)
-   - waifu2x-converter GUI frontend that is easy to use, and so cute. You need only drag&drop to convert your image. (and also you can set converting mode, noise reduction level, scale ratio, etc..., on GUI)
-   - Both waifu2x-converter x86 and x64 are included this package, and GUI see your windows architecture(x86|x64) and selects automatically which to use. 
-   - For windows only.
-
-
 ## Dependencies
 
 ### Platform
 
  * Ubuntu
- * Mac OS X?
- * Windows
- 
-(This program probably can be built under MacOSX, because OpenCV and other libraries support OS X)
+ * Windows10
 
 ### Libraries
 
  * [OpenCV](http://opencv.org/)(C++, version 3.0.0 rc1)
-
-This programs also depends on libraries shown below, but these are already included in this repository.
-*CUDA Support in OpenCV is optional, since not required. (in version 1.0.0, CUDA Support is not used.)*
-
  * [picojson](https://github.com/kazuho/picojson)
  * [TCLAP(Templatized C++ Command Line Parser Library)](http://tclap.sourceforge.net/)
 
 ## How to build
 
 ### for Ubuntu
+install OpenCV from sources.
+```
+# depends
+sudo apt-get install build-essential cmake git
+sudo apt-get install ffmpeg libopencv-dev libgtk-3-dev python-numpy python3-numpy libdc1394-22 libdc1394-22-dev libjpeg-dev libpng12-dev libtiff5-dev libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libxine2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libv4l-dev libtbb-dev qtbase5-dev libfaac-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip
 
-Sorry, under construction...
+# download
+wget https://github.com/Itseez/opencv/archive/3.1.0.zip
+unzip 3.1.0
 
-These are hints for building :
+# build 
+cd opencv-3.1.0
+mkdir build
+cd build
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_TBB=ON -D WITH_V4L=ON -D WITH_QT=ON -D WITH_OPENGL=ON ..
+make
+sudo make install
+sudo /bin/bash -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/opencv.conf'
+sudo ldconfig
 
- * I recommend to install OpenCV from sources. (build instruction is found [here](http://opencv.org/quickstart.html))
- * include path : `include/` `(/path/to/opencv/installed/directory)/include`
- * library path : `(/path/to/opencv/installed/directory)/lib` 
-     - if you have built and installed OpenCV from source, and have changed install directory(by using `CMAKE_INSTALL_PREFIX`), you may need to set environment variable `LD_LIBRARY_PATH` for your OpenCV installed directory.
- * libraries to link : `opencv_core` `opencv_imgproc` `opencv_imgcodecs` `opencv_features2d`
- * standard of C++ : `c++11`
+# update pkgconfig
+# update opencv pkgconfig '/usr/local/lib/pkgconfig/opencv.pc'
+# delete '-lippicv' 
 
+```
+and then,
+
+```
+cd build
+make
+```
+
+### for windows10
+1. open build/waifu2x.sln with visual studio 2015
+2. build solution.
 
 
 ## Usage
 
 Usage of this program can be seen by executing this with `--help` option.
 
-
-
-(My native language is not English, then I'm sorry for my broken English.)
